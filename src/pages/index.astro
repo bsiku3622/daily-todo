@@ -16,9 +16,17 @@ import "../styles/global.css";
     <meta name="apple-mobile-web-app-title" content="Daily" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <title>Daily Todo</title>
   </head>
   <body>
     <DailyTodo client:only="react" />
+    <script>
+      if (import.meta.env.PROD && "serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          void navigator.serviceWorker.register("/sw.js");
+        }, { once: true });
+      }
+    </script>
   </body>
 </html>

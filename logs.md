@@ -1,5 +1,12 @@
 # Work log
 
+## 2026-09-24 — Activate PWA installation and offline caching
+
+- 변경 파일: `src/pages/index.astro`, `README.md`
+- 요약: Astro 문서에 manifest 링크와 production service worker 등록을 연결하고, Android·iOS 설치 안내를 추가했습니다.
+
+PWA 플러그인은 manifest와 service worker 파일을 만들고도 Astro 페이지에 자동으로 삽입하지 않았습니다. 실제 HTML에서 링크와 등록 코드가 빠져 있음을 확인해 명시적으로 연결했습니다. Workbox precache에는 앱 화면, 번들, 아이콘, manifest가 포함됩니다.
+
 ## 2026-09-24 — Unify routine rows and add drag editing
 
 - 변경 파일: `src/components/DailyTodo.tsx`, `src/components/DailyTodo.css`, `package.json`, `pnpm-lock.yaml`
