@@ -3,6 +3,8 @@
 An Astro PWA for daily todos and time-based routine checkpoints, built with
 `@studio-baeks/paper-ui` primitives and atoms.
 
+Live site: https://todo.bsiku.dev/
+
 ## Run locally
 
 ```sh

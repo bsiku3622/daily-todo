@@ -1,5 +1,12 @@
 # Work log
 
+## 2026-09-24 — Connect the custom domain
+
+- 변경 파일: `README.md`, Cloudflare DNS, Vercel project domain
+- 요약: `todo.bsiku.dev`를 Vercel 프로젝트에 연결하고 Cloudflare에 DNS-only CNAME을 추가했습니다.
+
+기존 `bsiku.dev`의 DNS가 Cloudflare에서 관리되므로 nameserver나 다른 레코드는 바꾸지 않았습니다. Vercel이 이 프로젝트에 지정한 CNAME 값을 사용했고, Cloudflare proxy는 꺼서 Vercel의 도메인 검증과 인증서 발급이 직접 이루어지게 했습니다.
+
 ## 2026-09-23 — Prepare GitHub and Vercel deployment
 
 - 변경 파일: `package.json`, `pnpm-lock.yaml`, `vendor/paper-ui-0.1.0.tgz`, `astro.config.mjs`, `vercel.json`, `README.md`
