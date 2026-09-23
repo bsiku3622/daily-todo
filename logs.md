@@ -2,10 +2,11 @@
 
 ## 2026-09-23 — Prepare GitHub and Vercel deployment
 
-- 변경 파일: `package.json`, `pnpm-lock.yaml`, `vendor/paper-ui-0.1.0.tgz`, `astro.config.mjs`, `README.md`
-- 요약: 배포 환경에서 접근할 수 없는 로컬 `paper-ui` 경로를 저장소에 포함된 패키지 아카이브로 전환했습니다.
+- 변경 파일: `package.json`, `pnpm-lock.yaml`, `vendor/paper-ui-0.1.0.tgz`, `astro.config.mjs`, `vercel.json`, `README.md`
+- 요약: 배포 환경에서 접근할 수 없는 로컬 `paper-ui` 경로를 저장소에 포함된 패키지 아카이브로 전환하고, Vercel의 Astro 빌드와 `dist` 출력을 명시했습니다.
 
 `paper-ui`는 npm에 아직 공개되지 않았고 원본 Git 저장소도 패키지의 `dist`를 추적하지 않습니다. 따라서 원격 빌드에서 동일한 결과물을 설치하도록 현재 빌드를 pack했습니다. 패키지를 업데이트할 때는 새 아카이브를 다시 만들어야 합니다.
+Vercel 프로젝트를 Git 저장소 연결 전에 생성했더니 프레임워크가 `Other`로 잡혀 출력 경로가 `public`이 됐습니다. 저장소의 `vercel.json`에 Astro와 `dist`를 선언해 Git 배포에서도 같은 빌드 설정이 적용되게 했습니다.
 
 ## 2026-09-23 — Reduce visible rules
 
