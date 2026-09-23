@@ -1,5 +1,12 @@
 # Work log
 
+## 2026-09-24 — Make daily completion the focus
+
+- 변경 파일: `src/components/DailyTodo.tsx`, `src/components/DailyTodo.css`
+- 요약: 루틴을 먼저 배치하고, 남은 개수만 표시하며, 완료 항목의 퇴장 효과와 실행 취소를 추가했습니다. 시각 없는 일일 루틴과 버튼형 To-Do 입력, 헤더 로고, 넓어진 모바일 패딩도 반영했습니다.
+
+완료 항목은 저장소에서 삭제하지 않고 오늘 완료 상태로 유지합니다. 화면에서만 150ms 뒤 숨겨야 다음 날 루틴이 되살아나고, 직전 완료를 5초간 되돌릴 수 있습니다. 시각이 없는 루틴은 빈 시각의 체크포인트 하나로 표현해 기존 데이터 구조와 알림 검사 흐름을 유지했습니다.
+
 ## 2026-09-24 — Connect the custom domain
 
 - 변경 파일: `README.md`, Cloudflare DNS, Vercel project domain

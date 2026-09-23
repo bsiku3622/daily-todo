@@ -18,6 +18,11 @@
   padding-inline: 1rem;
 }
 
+.brand img {
+  display: block;
+  flex: none;
+}
+
 .notification-control > svg {
   width: 1rem;
   height: 1rem;
@@ -65,9 +70,17 @@
   padding-inline: 0.25rem;
 }
 
-.task-row.is-done .task-title {
-  color: var(--pui-color-content-tertiary);
-  text-decoration: line-through;
+.task-row.is-exiting,
+.checkpoint.is-exiting {
+  pointer-events: none;
+  animation: item-exit 150ms ease-in forwards;
+}
+
+@keyframes item-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-0.3rem);
+  }
 }
 
 .empty-row {
@@ -107,12 +120,24 @@
   background: var(--pui-color-surface-sunken);
 }
 
-.checkpoint.is-done {
-  color: var(--pui-color-content-secondary);
-}
-
 .checkpoint-time {
   min-width: 3rem;
+}
+
+.undo-notice {
+  position: fixed;
+  z-index: 10;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  border-radius: var(--pui-shape-radius-interaction);
+  background: var(--pui-color-surface-raised);
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.14);
 }
 
 .routine-form {
@@ -148,12 +173,30 @@
   }
 
   .app-main {
-    padding-top: 2rem;
+    padding: 4rem 2rem 8rem;
+  }
+
+  .header-inner {
+    padding-inline: 2rem;
+  }
+
+  .undo-notice {
+    right: max(2rem, env(safe-area-inset-right));
+    bottom: max(2rem, env(safe-area-inset-bottom));
+    left: max(2rem, env(safe-area-inset-left));
+    max-width: none;
   }
 
   .routine-block {
     grid-template-columns: 1fr;
     gap: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-row.is-exiting,
+  .checkpoint.is-exiting {
+    animation: none;
   }
 }
 
