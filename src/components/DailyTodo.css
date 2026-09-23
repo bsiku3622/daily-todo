@@ -1,0 +1,168 @@
+.app-shell {
+  color: var(--pui-color-content-primary);
+}
+
+.app-header {
+  border-bottom: 1px solid var(--pui-color-border-base);
+}
+
+.header-inner,
+.app-main {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.header-inner {
+  min-height: 3.25rem;
+  padding-inline: 1rem;
+}
+
+.notification-control > svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--pui-color-content-secondary);
+}
+
+.app-main {
+  padding: 3rem 1rem 4rem;
+}
+
+.page-heading {
+  padding-bottom: 0.25rem;
+}
+
+.section-heading {
+  min-height: 2.125rem;
+  margin-bottom: 0.75rem;
+}
+
+.add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.task-list,
+.checkpoint-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-list {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.task-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding-inline: 0.25rem;
+}
+
+.task-row.is-done .task-title {
+  color: var(--pui-color-content-tertiary);
+  text-decoration: line-through;
+}
+
+.empty-row {
+  padding-block: 2rem;
+  text-align: center;
+}
+
+.routine-list {
+  gap: 0.75rem;
+}
+
+.routine-block {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 1rem;
+}
+
+.routine-head {
+  align-self: start;
+}
+
+.checkpoint-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.checkpoint {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.125rem;
+  padding-inline: 0.65rem;
+  border-radius: var(--pui-shape-radius-interaction);
+  background: var(--pui-color-surface-sunken);
+}
+
+.checkpoint.is-done {
+  color: var(--pui-color-content-secondary);
+}
+
+.checkpoint-time {
+  min-width: 3rem;
+}
+
+.routine-form {
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.routine-form > div {
+  max-width: 28rem;
+}
+
+.time-row > div:first-child {
+  flex: 1;
+}
+
+.add-time {
+  align-self: flex-start;
+}
+
+.add-time > svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.storage-note {
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .notification-control > label,
+  .notification-control > svg {
+    display: none;
+  }
+
+  .app-main {
+    padding-top: 2rem;
+  }
+
+  .routine-block {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .add-row {
+    grid-template-columns: 1fr;
+  }
+
+  .add-row button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "daily-todo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.3.0",
+    "@studio-baeks/paper-ui": "file:vendor/paper-ui-0.1.0.tgz",
+    "@vite-pwa/astro": "^1.2.0",
+    "astro": "^5.13.7",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "pnpm@11.0.9"
+}
