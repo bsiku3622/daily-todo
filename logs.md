@@ -1,5 +1,12 @@
 # Work log
 
+## 2026-09-24 — Unify routine rows and add drag editing
+
+- 변경 파일: `src/components/DailyTodo.tsx`, `src/components/DailyTodo.css`, `package.json`, `pnpm-lock.yaml`
+- 요약: 루틴을 To-Do와 같은 한 줄 목록으로 바꾸고, 여러 체크포인트는 한 번에 하나씩 보여주며 완료 후 다음 항목으로 전환되게 했습니다. 두 목록의 삭제·드래그 정렬은 편집 모드로 옮겼습니다.
+
+모바일에서 순서를 바꿔야 하므로 기본 HTML drag-and-drop 대신 손잡이와 touch sensor가 있는 sortable 동작을 사용했습니다. 체크포인트 완료 정보는 그대로 유지하고 표시할 항목만 순서대로 바꿔 Undo와 다음 날 초기화를 보존합니다. 테스트 중 시각 필드의 이벤트 객체를 비동기 상태 업데이트에서 참조해 화면이 멈추는 기존 문제도 발견해, 값을 먼저 읽도록 수정했습니다.
+
 ## 2026-09-24 — Make daily completion the focus
 
 - 변경 파일: `src/components/DailyTodo.tsx`, `src/components/DailyTodo.css`

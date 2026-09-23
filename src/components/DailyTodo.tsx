@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type SyntheticEvent } from "react";
+import { closestCenter, DndContext, KeyboardSensor, MouseSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Box,
   Button,
@@ -118,6 +121,35 @@ const BellIcon = () => (
   </Icon>
 );
 
+const GripIcon = () => (
+  <Icon aria-hidden><path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01" strokeWidth="3" strokeLinecap="round" /></Icon>
+);
+
+function SortableRow({ id, label, editing, className, children }: {
+  id: string;
+  label: string;
+  editing: boolean;
+  className: string;
+  children: ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: !editing,
+  });
+  return (
+    <li ref={setNodeRef} className={`${className}${isDragging ? " is-dragging" : ""}`}
+      style={{ transform: CSS.Transform.toString(transform), transition }}>
+      {children}
+      {editing ? (
+        <button type="button" className="drag-handle" ref={setActivatorNodeRef}
+          {...attributes} {...listeners} aria-label={`${label} 드래그하여 순서 변경`}>
+          <GripIcon />
+        </button>
+      ) : null}
+    </li>
+  );
+}
+
 function ThemeButton() {
   const { resolved, setTheme } = useTheme();
   const next = resolved === "dark" ? "light" : "dark";
@@ -139,14 +171,23 @@ function DailyTodoApp() {
   const [draftTimes, setDraftTimes] = useState<string[]>([]);
   const [showRoutineForm, setShowRoutineForm] = useState(false);
   const [showTodoForm, setShowTodoForm] = useState(false);
+  const [editingRoutines, setEditingRoutines] = useState(false);
+  const [editingTodos, setEditingTodos] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [ready, setReady] = useState(false);
   const [exitingKeys, setExitingKeys] = useState<Set<string>>(() => new Set());
+  const [enteringKeys, setEnteringKeys] = useState<Set<string>>(() => new Set());
   const [completionNotice, setCompletionNotice] = useState<CompletionNotice | null>(null);
   const exitTimers = useRef(new Map<string, number>());
+  const enterTimers = useRef(new Map<string, number>());
   const noticeTimer = useRef<number | null>(null);
   const storeRef = useRef(store);
   const today = localDateKey(now);
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     setReady(true);
@@ -164,6 +205,7 @@ function DailyTodoApp() {
 
   useEffect(() => () => {
     exitTimers.current.forEach((timer) => window.clearTimeout(timer));
+    enterTimers.current.forEach((timer) => window.clearTimeout(timer));
     if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current);
   }, []);
 
@@ -238,8 +280,11 @@ function DailyTodoApp() {
   const completed = items.filter(Boolean).length;
   const total = items.length;
   const remaining = total - completed;
+  const visibleRoutines = store.routines.filter((routine) => editingRoutines ||
+    routine.checkpoints.some((point) => point.completedOn !== today || exitingKeys.has(`checkpoint:${point.id}`)));
+  const visibleTodos = store.todos.filter((todo) => editingTodos || !todo.done || exitingKeys.has(`todo:${todo.id}`));
 
-  const finishItem = (key: string, notice: CompletionNotice) => {
+  const finishItem = (key: string, notice: CompletionNotice, nextKey?: string) => {
     const previousTimer = exitTimers.current.get(key);
     if (previousTimer !== undefined) window.clearTimeout(previousTimer);
     setExitingKeys((previous) => new Set(previous).add(key));
@@ -250,6 +295,19 @@ function DailyTodoApp() {
         return next;
       });
       exitTimers.current.delete(key);
+      if (nextKey) {
+        setEnteringKeys((previous) => new Set(previous).add(nextKey));
+        const previousEnterTimer = enterTimers.current.get(nextKey);
+        if (previousEnterTimer !== undefined) window.clearTimeout(previousEnterTimer);
+        enterTimers.current.set(nextKey, window.setTimeout(() => {
+          setEnteringKeys((previous) => {
+            const next = new Set(previous);
+            next.delete(nextKey);
+            return next;
+          });
+          enterTimers.current.delete(nextKey);
+        }, 220));
+      }
     }, 150));
     if (noticeTimer.current !== null) window.clearTimeout(noticeTimer.current);
     setCompletionNotice(notice);
@@ -322,6 +380,21 @@ function DailyTodoApp() {
     setShowRoutineForm(false);
   };
 
+  const reorderItems = (kind: "todos" | "routines", event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setStore((previous) => {
+      if (kind === "routines") {
+        const from = previous.routines.findIndex((item) => item.id === active.id);
+        const to = previous.routines.findIndex((item) => item.id === over.id);
+        return from < 0 || to < 0 ? previous : { ...previous, routines: arrayMove(previous.routines, from, to) };
+      }
+      const from = previous.todos.findIndex((item) => item.id === active.id);
+      const to = previous.todos.findIndex((item) => item.id === over.id);
+      return from < 0 || to < 0 ? previous : { ...previous, todos: arrayMove(previous.todos, from, to) };
+    });
+  };
+
   const setNotifications = async (enabled: boolean) => {
     if (!enabled) {
       setStore((previous) => ({ ...previous, notificationEnabled: false }));
@@ -349,79 +422,102 @@ function DailyTodoApp() {
   const routineSection = (
     <Box as="section" aria-labelledby="routines-title">
       <Inline justify="between" gap="md" className="section-heading">
-        <Stack gap="xs">
-          <Text id="routines-title" variant="heading">Routine</Text>
-          <Text variant="caption" ink="soft">매일 새로 시작합니다.</Text>
-        </Stack>
-        <Button size="sm" variant="outline" onClick={() => setShowRoutineForm((value) => !value)}>
-          {showRoutineForm ? "닫기" : "루틴 추가"}
-        </Button>
+        <Text id="routines-title" variant="heading">Routine</Text>
+        <Inline gap="xs">
+          {editingRoutines ? (
+            <Button size="sm" variant="ghost" onClick={() => setEditingRoutines(false)}>완료</Button>
+          ) : (
+            <>
+              <Button size="sm" variant="outline" onClick={() => setShowRoutineForm((value) => !value)}>
+                {showRoutineForm ? "닫기" : "루틴 추가"}
+              </Button>
+              {store.routines.length > 0 ? (
+                <Button size="sm" variant="ghost" onClick={() => {
+                  setShowRoutineForm(false);
+                  setEditingRoutines(true);
+                }}>편집</Button>
+              ) : null}
+            </>
+          )}
+        </Inline>
       </Inline>
 
-      <Stack className="routine-list">
-        {store.routines.map((routine) => {
-          const routineRemaining = routine.checkpoints.filter((item) => item.completedOn !== today).length;
-          return (
-            <Box key={routine.id} className="routine-block">
-              <Inline justify="between" gap="md" className="routine-head">
-                <Inline gap="sm" align="center">
-                  <Text variant="subheading">{routine.title}</Text>
-                  <Text variant="caption" ink="soft">{routineRemaining ? `${routineRemaining}개 남음` : "오늘 완료"}</Text>
-                </Inline>
-                <IconButton
-                  aria-label={`${routine.title} 루틴 삭제`}
-                  variant="ghostMuted"
-                  size="sm"
-                  onClick={() => setStore((previous) => ({
-                    ...previous,
-                    routines: previous.routines.filter((item) => item.id !== routine.id),
-                  }))}
-                >
-                  <TrashIcon />
-                </IconButton>
-              </Inline>
-              <Box as="ul" className="checkpoint-list">
-                {routine.checkpoints.filter((checkpoint) =>
-                  checkpoint.completedOn !== today || exitingKeys.has(`checkpoint:${checkpoint.id}`)
-                ).map((checkpoint) => {
-                  const checked = checkpoint.completedOn === today;
-                  const isPast = checkpoint.time && checkpoint.time <= `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-                  return (
-                    <Box as="li" key={checkpoint.id} className={`checkpoint${checked ? " is-exiting" : ""}`}>
-                      <Checkbox
-                        checked={checked}
-                        onChange={(event) => {
-                          const next = event.currentTarget.checked;
-                          setStore((previous) => ({
-                            ...previous,
-                            routines: previous.routines.map((item) => item.id === routine.id ? {
-                              ...item,
-                              checkpoints: item.checkpoints.map((point) => point.id === checkpoint.id ? {
-                                ...point,
-                                completedOn: next ? today : undefined,
-                              } : point),
-                            } : item),
-                          }));
-                          if (next) finishItem(`checkpoint:${checkpoint.id}`, {
-                            kind: "checkpoint", id: checkpoint.id, routineId: routine.id,
-                            title: `${routine.title}${checkpoint.time ? ` · ${checkpoint.time}` : ""}`,
-                          });
-                        }}
-                        aria-label={`${routine.title} ${checkpoint.time || "오늘"} 체크`}
-                      />
-                      <Text as="span" family={checkpoint.time ? "mono" : undefined} className="checkpoint-time">
-                        {checkpoint.time || "오늘"}
-                      </Text>
-                      {checkpoint.time ? <Text as="span" variant="caption" ink="soft">{isPast ? "미완료" : "예정"}</Text> : null}
-                    </Box>
-                  );
-                })}
-              </Box>
-            </Box>
-          );
-        })}
-        {!store.routines.length ? <Box className="empty-row"><Text ink="soft">등록한 루틴이 없습니다.</Text></Box> : null}
-      </Stack>
+      <DndContext sensors={sensors} collisionDetection={closestCenter}
+        onDragEnd={(event) => reorderItems("routines", event)}>
+        <SortableContext items={visibleRoutines.map((routine) => routine.id)} strategy={verticalListSortingStrategy}>
+          <Box as="ul" className="task-list">
+            {visibleRoutines.map((routine) => {
+              const checkpoint = routine.checkpoints.find((point) =>
+                exitingKeys.has(`checkpoint:${point.id}`)
+              ) ?? routine.checkpoints.find((point) => point.completedOn !== today);
+              if (!checkpoint && !editingRoutines) return null;
+              const checkpointIndex = checkpoint
+                ? routine.checkpoints.findIndex((point) => point.id === checkpoint.id)
+                : -1;
+              const key = checkpoint ? `checkpoint:${checkpoint.id}` : `routine:${routine.id}:done`;
+              const meta = checkpoint
+                ? [
+                    checkpoint.time,
+                    routine.checkpoints.length > 1
+                      ? `${checkpointIndex + 1}/${routine.checkpoints.length}`
+                      : "",
+                  ].filter(Boolean).join(" · ")
+                : "오늘 완료";
+              return (
+                <SortableRow id={routine.id} key={routine.id} label={routine.title} editing={editingRoutines}
+                  className={`task-row routine-row${editingRoutines ? " is-editing" : ""}${exitingKeys.has(key) ? " is-exiting" : ""}${enteringKeys.has(key) ? " is-entering" : ""}`}>
+                  <Checkbox
+                    checked={checkpoint ? checkpoint.completedOn === today : true}
+                    disabled={editingRoutines || !checkpoint}
+                    onChange={(event) => {
+                      if (!checkpoint || !event.currentTarget.checked) return;
+                      const nextCheckpoint = routine.checkpoints.slice(checkpointIndex + 1)
+                        .find((point) => point.completedOn !== today);
+                      setStore((previous) => ({
+                        ...previous,
+                        routines: previous.routines.map((item) => item.id === routine.id ? {
+                          ...item,
+                          checkpoints: item.checkpoints.map((point) => point.id === checkpoint.id
+                            ? { ...point, completedOn: today } : point),
+                        } : item),
+                      }));
+                      finishItem(key, {
+                        kind: "checkpoint",
+                        id: checkpoint.id,
+                        routineId: routine.id,
+                        title: `${routine.title}${checkpoint.time ? ` · ${checkpoint.time}` : ""}`,
+                      }, nextCheckpoint ? `checkpoint:${nextCheckpoint.id}` : undefined);
+                    }}
+                    aria-label={`${routine.title} ${checkpoint?.time || "오늘"} 체크`}
+                  />
+                  <Text as="span" className="task-title">{routine.title}</Text>
+                  {meta ? <Text as="span" variant="caption" ink="soft" className="task-meta">{meta}</Text> : null}
+                  {editingRoutines ? (
+                    <Inline gap="xs" className="edit-actions">
+                      <IconButton aria-label={`${routine.title} 루틴 삭제`} variant="ghostMuted" size="sm"
+                        onClick={() => setStore((previous) => ({
+                          ...previous,
+                          routines: previous.routines.filter((item) => item.id !== routine.id),
+                        }))}>
+                        <TrashIcon />
+                      </IconButton>
+                    </Inline>
+                  ) : null}
+                </SortableRow>
+              );
+            })}
+            {store.routines.length === 0 ? (
+              <Box as="li" className="empty-row"><Text ink="soft">등록한 루틴이 없습니다.</Text></Box>
+            ) : !editingRoutines && store.routines.every((routine) =>
+              routine.checkpoints.every((point) => point.completedOn === today)
+            ) && !store.routines.some((routine) =>
+              routine.checkpoints.some((point) => exitingKeys.has(`checkpoint:${point.id}`))
+            ) ? (
+              <Box as="li" className="empty-row"><Text ink="soft">오늘의 루틴을 모두 마쳤습니다.</Text></Box>
+            ) : null}
+          </Box>
+        </SortableContext>
+      </DndContext>
 
       {showRoutineForm ? <Box as="form" onSubmit={addRoutine} className="routine-form" radius="md" surface="sunken">
         <Stack gap="md">
@@ -442,9 +538,12 @@ function DailyTodoApp() {
                 <Field
                   type="time"
                   value={time}
-                  onChange={(event) => setDraftTimes((previous) =>
-                    previous.map((item, itemIndex) => itemIndex === index ? event.currentTarget.value : item)
-                  )}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    setDraftTimes((previous) =>
+                      previous.map((item, itemIndex) => itemIndex === index ? value : item)
+                    );
+                  }}
                   aria-label={`${index + 1}번째 체크 시각`}
                 />
                 <IconButton
@@ -514,9 +613,23 @@ function DailyTodoApp() {
         <Box as="section" aria-labelledby="todos-title">
           <Inline justify="between" gap="md" className="section-heading">
             <Text id="todos-title" variant="heading">To-Do</Text>
-            <Button size="sm" variant="outline" onClick={() => setShowTodoForm((value) => !value)}>
-              {showTodoForm ? "닫기" : "할 일 추가"}
-            </Button>
+            <Inline gap="xs">
+              {editingTodos ? (
+                <Button size="sm" variant="ghost" onClick={() => setEditingTodos(false)}>완료</Button>
+              ) : (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => setShowTodoForm((value) => !value)}>
+                    {showTodoForm ? "닫기" : "할 일 추가"}
+                  </Button>
+                  {store.todos.length > 0 ? (
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      setShowTodoForm(false);
+                      setEditingTodos(true);
+                    }}>편집</Button>
+                  ) : null}
+                </>
+              )}
+            </Inline>
           </Inline>
 
           {showTodoForm ? <Box as="form" onSubmit={addTodo} className="add-row">
@@ -530,46 +643,53 @@ function DailyTodoApp() {
             <Button type="submit" size="lg" disabled={!todoTitle.trim()}>추가</Button>
           </Box> : null}
 
-          <Box as="ul" className="task-list">
-            {store.todos.filter((todo) => !todo.done || exitingKeys.has(`todo:${todo.id}`)).map((todo) => (
-              <Box as="li" key={todo.id} className={`task-row${todo.done ? " is-exiting" : ""}`}>
-                <Checkbox
-                  checked={todo.done}
-                  onChange={(event) => {
-                    const done = event.currentTarget.checked;
-                    setStore((previous) => ({
-                      ...previous,
-                      todos: previous.todos.map((item) => item.id === todo.id ? { ...item, done } : item),
-                    }));
-                    if (done) finishItem(`todo:${todo.id}`, { kind: "todo", id: todo.id, title: todo.title });
-                  }}
-                  aria-label={`${todo.title} 완료`}
-                />
-                <Text as="span" className="task-title">{todo.title}</Text>
-                <IconButton
-                  aria-label={`${todo.title} 삭제`}
-                  variant="ghostMuted"
-                  size="sm"
-                  onClick={() => setStore((previous) => ({
-                    ...previous,
-                    todos: previous.todos.filter((item) => item.id !== todo.id),
-                  }))}
-                >
-                  <TrashIcon />
-                </IconButton>
+          <DndContext sensors={sensors} collisionDetection={closestCenter}
+            onDragEnd={(event) => reorderItems("todos", event)}>
+            <SortableContext items={visibleTodos.map((todo) => todo.id)} strategy={verticalListSortingStrategy}>
+              <Box as="ul" className="task-list">
+                {visibleTodos.map((todo) => {
+                  return <SortableRow id={todo.id} key={todo.id} label={todo.title} editing={editingTodos}
+                    className={`task-row${todo.done && !editingTodos ? " is-exiting" : ""}${todo.done && editingTodos ? " is-completed" : ""}`}>
+                    <Checkbox
+                      checked={todo.done}
+                      disabled={editingTodos}
+                      onChange={(event) => {
+                        const done = event.currentTarget.checked;
+                        setStore((previous) => ({
+                          ...previous,
+                          todos: previous.todos.map((item) => item.id === todo.id ? { ...item, done } : item),
+                        }));
+                        if (done) finishItem(`todo:${todo.id}`, { kind: "todo", id: todo.id, title: todo.title });
+                      }}
+                      aria-label={`${todo.title} 완료`}
+                    />
+                    <Text as="span" className="task-title">{todo.title}</Text>
+                    {editingTodos ? (
+                      <Inline gap="xs" className="edit-actions">
+                        <IconButton aria-label={`${todo.title} 삭제`} variant="ghostMuted" size="sm"
+                          onClick={() => setStore((previous) => ({
+                            ...previous,
+                            todos: previous.todos.filter((item) => item.id !== todo.id),
+                          }))}>
+                          <TrashIcon />
+                        </IconButton>
+                      </Inline>
+                    ) : null}
+                  </SortableRow>;
+                })}
+                {store.todos.length === 0 ? (
+                  <Box as="li" className="empty-row">
+                    <Text ink="soft">등록한 할 일이 없습니다.</Text>
+                  </Box>
+                ) : !editingTodos && store.todos.every((todo) => todo.done) &&
+                  !store.todos.some((todo) => exitingKeys.has(`todo:${todo.id}`)) ? (
+                  <Box as="li" className="empty-row">
+                    <Text ink="soft">오늘 할 일을 모두 마쳤습니다.</Text>
+                  </Box>
+                ) : null}
               </Box>
-            ))}
-            {store.todos.length === 0 ? (
-              <Box as="li" className="empty-row">
-                <Text ink="soft">등록한 할 일이 없습니다.</Text>
-              </Box>
-            ) : store.todos.every((todo) => todo.done) &&
-              !store.todos.some((todo) => exitingKeys.has(`todo:${todo.id}`)) ? (
-              <Box as="li" className="empty-row">
-                <Text ink="soft">오늘 할 일을 모두 마쳤습니다.</Text>
-              </Box>
-            ) : null}
-          </Box>
+            </SortableContext>
+          </DndContext>
         </Box>
 
         {completionNotice ? (
