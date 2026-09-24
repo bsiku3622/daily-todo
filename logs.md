@@ -1,5 +1,10 @@
 # Work log
 
+## 2026-09-24 — Refine mobile header spacing
+
+- 변경 파일: `src/components/DailyTodo.css`
+- 요약: 모바일 콘텐츠 상단 여백을 좌우와 같은 `2rem`으로 줄이고, 알림 ON/OFF 토글 왼쪽에 종 아이콘을 유지했습니다.
+
 ## 2026-09-24 — Activate PWA installation and offline caching
 
 - 변경 파일: `src/pages/index.astro`, `README.md`

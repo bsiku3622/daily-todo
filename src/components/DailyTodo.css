@@ -194,13 +194,12 @@
 }
 
 @media (max-width: 600px) {
-  .notification-control > label,
-  .notification-control > svg {
+  .notification-control > label {
     display: none;
   }
 
   .app-main {
-    padding: 4rem 2rem 8rem;
+    padding: 2rem 2rem 8rem;
   }
 
   .header-inner {
