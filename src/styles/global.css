@@ -5,7 +5,7 @@
 }
 
 html {
-  background: var(--pui-color-surface-canvas, #fcfcfc);
+  background: var(--pui-color-bg-canvas, #f9f9f9);
   color-scheme: light dark;
   -webkit-text-size-adjust: 100%;
 }
@@ -14,7 +14,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100dvh;
-  background: var(--pui-color-surface-canvas, #fcfcfc);
+  background: var(--pui-color-bg-canvas, #f9f9f9);
 }
 
 button,
@@ -23,6 +23,6 @@ input {
 }
 
 ::selection {
-  background: var(--pui-color-content-primary);
-  color: var(--pui-color-surface-raised);
+  background: var(--pui-color-ink-primary);
+  color: var(--pui-color-bg-raised);
 }

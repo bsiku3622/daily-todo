@@ -1,5 +1,41 @@
 # Work log
 
+## 2026-09-25 — Adopt unified neutral palette steps
+
+- 변경 파일: `vendor/paper-ui-0.1.0.tgz`, `pnpm-lock.yaml`
+- 요약: Paper UI의 neutral palette step 방향 변경을 반영한 패키지를 갱신하고 production build를 확인했습니다.
+
+이 업데이트는 palette 주소만 재정렬하고 semantic CSS의 HEX 값은 보존합니다. 그래서 앱 고유 스타일을 덧대지 않고 공통 패키지 버전을 최신 계약에 맞췄습니다.
+
+
+## 2026-09-25 — Rebalance shared light neutral ramp
+
+- 변경 파일: `vendor/paper-ui-0.1.0.tgz`, `pnpm-lock.yaml`
+- 요약: Paper UI가 semantic anchor 사이의 OKLCH 보간으로 재생성한 light neutral ramp를 반영했습니다.
+
+well·border·sunken의 밝기 간격을 정돈하면서 공통 패키지만 갱신했습니다. 앱의 별도 색상 override는 추가하지 않았습니다.
+
+## 2026-09-25 — Use a consistent, quieter neutral ramp
+
+- 변경 파일: `vendor/paper-ui-0.1.0.tgz`, `pnpm-lock.yaml`
+- 요약: Paper UI의 라이트 neutral이 achromatic과 zinc cast의 중간 톤으로 조정된 패키지를 반영했습니다.
+
+세 앱이 모두 동일한 저채도 neutral source를 사용하도록 vendored package만 갱신했습니다. 앱별 색상 override나 dark palette는 추가하지 않았습니다.
+
+## 2026-09-25 — Refresh the shared neutral palette
+
+- 변경 파일: `vendor/paper-ui-0.1.0.tgz`, `pnpm-lock.yaml`
+- 요약: Paper UI의 미세한 light zinc cast palette가 포함된 패키지로 갱신했습니다. Dark palette와 앱별 색상 override는 건드리지 않았습니다.
+
+세 앱이 같은 neutral system을 보도록 공통 vendored package를 갱신했습니다. 리스트와 앱 고유 스타일은 그대로 두고 semantic surface/ink 값만 최신 팔레트에서 공급받습니다.
+
+## 2026-09-25 — Migrate to current Paper UI tokens and atoms
+
+- 변경 파일: `vendor/paper-ui-0.1.0.tgz`, `pnpm-lock.yaml`, `src/styles/global.css`, `src/components/DailyTodo.css`, `src/components/DailyTodo.tsx`, `src/pages/index.astro`
+- 요약: 앱에 직접 복제했던 색상값을 제거하고 최신 Paper UI 패키지의 `bg`·`ink` 토큰을 사용하도록 갱신했습니다. 드래그 핸들도 Paper UI `IconButton`으로 교체했습니다.
+
+앱별 색상 override는 라이브러리 토큰과 시간이 지나며 어긋날 수 있어 제거했습니다. 기존 surface/content 변수 이름을 새 토큰 계약에 맞게 옮겼고, 루틴·To-Do 전용 레이아웃과 표현은 제품 맥락이므로 그대로 유지했습니다.
+
 ## 2026-09-24 — Refine mobile header spacing
 
 - 변경 파일: `src/components/DailyTodo.css`

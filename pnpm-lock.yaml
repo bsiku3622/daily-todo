@@ -1397,7 +1397,7 @@ packages:
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
   '@studio-baeks/paper-ui@file:vendor/paper-ui-0.1.0.tgz':
-    resolution: {integrity: sha512-pWfIF2QtqM1uUrbaqa4S1YBhgDvbyNR2XiHZqwbQgkPE7tTxJJdXystMtuDWpmUouwygt3+JMq64yypmU2TA6Q==, tarball: file:vendor/paper-ui-0.1.0.tgz}
+    resolution: {integrity: sha512-jXk5g8wnN0QCw4gDcksojTTjl2Ywv1pwvlXVLZbImoUisZU+fNeTx2btxaj6jlxztqdSp3kMuW90P9E+3zvXNQ==, tarball: file:vendor/paper-ui-0.1.0.tgz}
     version: 0.1.0
     peerDependencies:
       react: '>=18'

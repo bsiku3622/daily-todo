@@ -141,10 +141,10 @@ function SortableRow({ id, label, editing, className, children }: {
       style={{ transform: CSS.Transform.toString(transform), transition }}>
       {children}
       {editing ? (
-        <button type="button" className="drag-handle" ref={setActivatorNodeRef}
+        <IconButton type="button" variant="ghost" size="sm" className="drag-handle" ref={setActivatorNodeRef}
           {...attributes} {...listeners} aria-label={`${label} 드래그하여 순서 변경`}>
           <GripIcon />
-        </button>
+        </IconButton>
       ) : null}
     </li>
   );

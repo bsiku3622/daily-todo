@@ -1,5 +1,5 @@
 .app-shell {
-  color: var(--pui-color-content-primary);
+  color: var(--pui-color-ink-primary);
 }
 
 .app-header {
@@ -26,7 +26,7 @@
 .notification-control > svg {
   width: 1rem;
   height: 1rem;
-  color: var(--pui-color-content-secondary);
+  color: var(--pui-color-ink-secondary);
 }
 
 .app-main {
@@ -91,7 +91,7 @@
   border: 0;
   border-radius: var(--pui-shape-radius-interaction);
   background: transparent;
-  color: var(--pui-color-content-secondary);
+  color: var(--pui-color-ink-secondary);
   cursor: grab;
   touch-action: none;
 }
@@ -114,12 +114,12 @@
   position: relative;
   z-index: 2;
   border-radius: var(--pui-shape-radius-interaction);
-  background: var(--pui-color-surface-raised);
+  background: var(--pui-color-bg-raised);
   box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.12);
 }
 
 .task-row.is-completed .task-title {
-  color: var(--pui-color-content-tertiary);
+  color: var(--pui-color-ink-tertiary);
   text-decoration: line-through;
 }
 
@@ -163,7 +163,7 @@
   max-width: calc(100vw - 2rem);
   padding: 0.5rem 0.75rem 0.5rem 1rem;
   border-radius: var(--pui-shape-radius-interaction);
-  background: var(--pui-color-surface-raised);
+  background: var(--pui-color-bg-raised);
   box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.14);
 }
 
