@@ -3,17 +3,20 @@ import { closestCenter, DndContext, KeyboardSensor, MouseSensor, TouchSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  Badge,
   Box,
   Button,
   Checkbox,
   Divider,
   Field,
+  Grid,
   Icon,
   IconButton,
   Inline,
   Label,
   PaperProvider,
   Stack,
+  Surface,
   Switch,
   Text,
   useTheme,
@@ -137,7 +140,8 @@ function SortableRow({ id, label, editing, className, children }: {
     disabled: !editing,
   });
   return (
-    <li ref={setNodeRef} className={`${className}${isDragging ? " is-dragging" : ""}`}
+    <Surface as="li" ref={setNodeRef} className={`${className}${isDragging ? " is-dragging" : ""}`}
+      radius="sm" paddingX="xs" fill={isDragging ? "raised" : "canvas"} shadow={isDragging} elevation={isDragging ? "lifted" : undefined}
       style={{ transform: CSS.Transform.toString(transform), transition }}>
       {children}
       {editing ? (
@@ -146,7 +150,7 @@ function SortableRow({ id, label, editing, className, children }: {
           <GripIcon />
         </IconButton>
       ) : null}
-    </li>
+    </Surface>
   );
 }
 
@@ -156,7 +160,7 @@ function ThemeButton() {
   return (
     <IconButton
       aria-label={`${next === "dark" ? "다크" : "라이트"} 모드로 전환`}
-      variant="ghostMuted"
+      variant="muted"
       onClick={() => setTheme(next)}
     >
       {resolved === "dark" ? <SunIcon /> : <MoonIcon />}
@@ -408,11 +412,6 @@ function DailyTodoApp() {
     }));
   };
 
-  const formatted = new Intl.DateTimeFormat("ko-KR", {
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  }).format(now);
   const shortDate = new Intl.DateTimeFormat("ko-KR", {
     month: "long",
     day: "numeric",
@@ -420,15 +419,15 @@ function DailyTodoApp() {
   }).format(now);
 
   const routineSection = (
-    <Box as="section" aria-labelledby="routines-title">
-      <Inline justify="between" gap="md" className="section-heading">
+    <Stack as="section" gap="md" aria-labelledby="routines-title">
+      <Inline justify="between" gap="md">
         <Text id="routines-title" variant="heading">Routine</Text>
         <Inline gap="xs">
           {editingRoutines ? (
             <Button size="sm" variant="ghost" onClick={() => setEditingRoutines(false)}>완료</Button>
           ) : (
             <>
-              <Button size="sm" variant="outline" onClick={() => setShowRoutineForm((value) => !value)}>
+              <Button size="sm" variant="hairline" onClick={() => setShowRoutineForm((value) => !value)}>
                 {showRoutineForm ? "닫기" : "루틴 추가"}
               </Button>
               {store.routines.length > 0 ? (
@@ -445,7 +444,7 @@ function DailyTodoApp() {
       <DndContext sensors={sensors} collisionDetection={closestCenter}
         onDragEnd={(event) => reorderItems("routines", event)}>
         <SortableContext items={visibleRoutines.map((routine) => routine.id)} strategy={verticalListSortingStrategy}>
-          <Box as="ul" className="task-list">
+          <Stack as="ul" gap="xs" className="task-list">
             {visibleRoutines.map((routine) => {
               const checkpoint = routine.checkpoints.find((point) =>
                 exitingKeys.has(`checkpoint:${point.id}`)
@@ -491,10 +490,10 @@ function DailyTodoApp() {
                     aria-label={`${routine.title} ${checkpoint?.time || "오늘"} 체크`}
                   />
                   <Text as="span" className="task-title">{routine.title}</Text>
-                  {meta ? <Text as="span" variant="caption" ink="soft" className="task-meta">{meta}</Text> : null}
+                  {meta ? <Badge variant="muted" size="sm" className="task-meta">{meta}</Badge> : null}
                   {editingRoutines ? (
                     <Inline gap="xs" className="edit-actions">
-                      <IconButton aria-label={`${routine.title} 루틴 삭제`} variant="ghostMuted" size="sm"
+                      <IconButton aria-label={`${routine.title} 루틴 삭제`} variant="muted" size="sm"
                         onClick={() => setStore((previous) => ({
                           ...previous,
                           routines: previous.routines.filter((item) => item.id !== routine.id),
@@ -507,23 +506,23 @@ function DailyTodoApp() {
               );
             })}
             {store.routines.length === 0 ? (
-              <Box as="li" className="empty-row"><Text ink="soft">등록한 루틴이 없습니다.</Text></Box>
+              <Inline as="li" justify="center" paddingY="xl"><Text ink="secondary">등록한 루틴이 없습니다.</Text></Inline>
             ) : !editingRoutines && store.routines.every((routine) =>
               routine.checkpoints.every((point) => point.completedOn === today)
             ) && !store.routines.some((routine) =>
               routine.checkpoints.some((point) => exitingKeys.has(`checkpoint:${point.id}`))
             ) ? (
-              <Box as="li" className="empty-row"><Text ink="soft">오늘의 루틴을 모두 마쳤습니다.</Text></Box>
+              <Inline as="li" justify="center" paddingY="xl"><Text ink="secondary">오늘의 루틴을 모두 마쳤습니다.</Text></Inline>
             ) : null}
-          </Box>
+          </Stack>
         </SortableContext>
       </DndContext>
 
-      {showRoutineForm ? <Box as="form" onSubmit={addRoutine} className="routine-form" radius="md" surface="sunken">
+      {showRoutineForm ? <Surface as="form" onSubmit={addRoutine} fill="sunken" radius="md" padding="lg">
         <Stack gap="md">
           <Stack gap="xs">
             <Text variant="subheading">새 루틴</Text>
-            <Text variant="caption" ink="soft">시각을 넣지 않으면 하루에 한 번 체크합니다.</Text>
+            <Text variant="caption" ink="secondary">시각을 넣지 않으면 하루에 한 번 체크합니다.</Text>
           </Stack>
           <Field
             value={routineTitle}
@@ -548,35 +547,32 @@ function DailyTodoApp() {
                 />
                 <IconButton
                   aria-label={`${index + 1}번째 시각 삭제`}
-                  variant="ghostMuted"
+                  variant="muted"
                   onClick={() => setDraftTimes((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}
                 >
                   <TrashIcon />
                 </IconButton>
               </Inline>
             ))}
-            <Button
-              type="button"
-              variant="soft"
-              onClick={() => setDraftTimes((previous) => [...previous, "12:00"])}
-              className="add-time"
-            >
-              <PlusIcon /> 시각 추가
-            </Button>
+            <Inline>
+              <Button type="button" variant="soft" onClick={() => setDraftTimes((previous) => [...previous, "12:00"])}>
+                <PlusIcon /> 시각 추가
+              </Button>
+            </Inline>
           </Stack>
           <Button type="submit" disabled={!routineTitle.trim()}>
             루틴 만들기
           </Button>
         </Stack>
-      </Box> : null}
-    </Box>
+      </Surface> : null}
+    </Stack>
   );
 
   return (
-    <Box className="app-shell" surface="canvas" minHeight="100dvh">
-      <Box as="header" className="app-header" surface="raised">
-        <Inline justify="between" gap="md" className="header-inner">
-          <Inline gap="sm" align="center" className="brand">
+    <Box className="app-shell" minHeight="100dvh">
+      <Surface as="header" className="app-header" fill="raised" border="bottom">
+        <Inline justify="between" gap="md" paddingX="lg" paddingY="sm" width="full" maxWidth="measure.lg" className="centered">
+          <Inline gap="sm" align="center">
             <img src="/favicon.svg" alt="" width="22" height="22" />
             <Text variant="subheading" as="p">Daily Todo</Text>
           </Inline>
@@ -594,15 +590,15 @@ function DailyTodoApp() {
             <ThemeButton />
           </Inline>
         </Inline>
-      </Box>
+      </Surface>
 
-      <Stack as="main" className="app-main" gap="xl">
-        <Stack gap="sm" className="page-heading">
+      <Stack as="main" gap="xl" width="full" maxWidth="measure.lg" paddingX="lg" paddingY="3xl" className="centered">
+        <Stack gap="sm" align="start">
           <Text variant="title">{shortDate}</Text>
           {total > 0 ? (
-            <Text variant="caption" ink="soft" aria-live="polite">
+            <Badge variant="muted" size="sm" aria-live="polite">
               {remaining ? `${remaining}개 남음` : "끝!"}
-            </Text>
+            </Badge>
           ) : null}
         </Stack>
 
@@ -610,15 +606,15 @@ function DailyTodoApp() {
 
         <Divider />
 
-        <Box as="section" aria-labelledby="todos-title">
-          <Inline justify="between" gap="md" className="section-heading">
+        <Stack as="section" gap="md" aria-labelledby="todos-title">
+          <Inline justify="between" gap="md">
             <Text id="todos-title" variant="heading">To-Do</Text>
             <Inline gap="xs">
               {editingTodos ? (
                 <Button size="sm" variant="ghost" onClick={() => setEditingTodos(false)}>완료</Button>
               ) : (
                 <>
-                  <Button size="sm" variant="outline" onClick={() => setShowTodoForm((value) => !value)}>
+                  <Button size="sm" variant="hairline" onClick={() => setShowTodoForm((value) => !value)}>
                     {showTodoForm ? "닫기" : "할 일 추가"}
                   </Button>
                   {store.todos.length > 0 ? (
@@ -632,7 +628,7 @@ function DailyTodoApp() {
             </Inline>
           </Inline>
 
-          {showTodoForm ? <Box as="form" onSubmit={addTodo} className="add-row">
+          {showTodoForm ? <Grid as="form" onSubmit={addTodo} columns={{ base: "1fr", sm: "minmax(0, 1fr) auto" }} gap="sm">
             <Field
               value={todoTitle}
               onChange={(event) => setTodoTitle(event.currentTarget.value)}
@@ -641,12 +637,12 @@ function DailyTodoApp() {
               size="lg"
             />
             <Button type="submit" size="lg" disabled={!todoTitle.trim()}>추가</Button>
-          </Box> : null}
+          </Grid> : null}
 
           <DndContext sensors={sensors} collisionDetection={closestCenter}
             onDragEnd={(event) => reorderItems("todos", event)}>
             <SortableContext items={visibleTodos.map((todo) => todo.id)} strategy={verticalListSortingStrategy}>
-              <Box as="ul" className="task-list">
+              <Stack as="ul" gap="xs" className="task-list">
                 {visibleTodos.map((todo) => {
                   return <SortableRow id={todo.id} key={todo.id} label={todo.title} editing={editingTodos}
                     className={`task-row${todo.done && !editingTodos ? " is-exiting" : ""}${todo.done && editingTodos ? " is-completed" : ""}`}>
@@ -666,7 +662,7 @@ function DailyTodoApp() {
                     <Text as="span" className="task-title">{todo.title}</Text>
                     {editingTodos ? (
                       <Inline gap="xs" className="edit-actions">
-                        <IconButton aria-label={`${todo.title} 삭제`} variant="ghostMuted" size="sm"
+                        <IconButton aria-label={`${todo.title} 삭제`} variant="muted" size="sm"
                           onClick={() => setStore((previous) => ({
                             ...previous,
                             todos: previous.todos.filter((item) => item.id !== todo.id),
@@ -678,28 +674,28 @@ function DailyTodoApp() {
                   </SortableRow>;
                 })}
                 {store.todos.length === 0 ? (
-                  <Box as="li" className="empty-row">
-                    <Text ink="soft">등록한 할 일이 없습니다.</Text>
-                  </Box>
+                  <Inline as="li" justify="center" paddingY="xl">
+                    <Text ink="secondary">등록한 할 일이 없습니다.</Text>
+                  </Inline>
                 ) : !editingTodos && store.todos.every((todo) => todo.done) &&
                   !store.todos.some((todo) => exitingKeys.has(`todo:${todo.id}`)) ? (
-                  <Box as="li" className="empty-row">
-                    <Text ink="soft">오늘 할 일을 모두 마쳤습니다.</Text>
-                  </Box>
+                  <Inline as="li" justify="center" paddingY="xl">
+                    <Text ink="secondary">오늘 할 일을 모두 마쳤습니다.</Text>
+                  </Inline>
                 ) : null}
-              </Box>
+              </Stack>
             </SortableContext>
           </DndContext>
-        </Box>
+        </Stack>
 
         {completionNotice ? (
-          <Box className="undo-notice" role="status">
+          <Surface className="undo-notice" role="status" fill="raised" border radius="md" elevation="toast" shadow>
             <Text as="span" variant="caption">{`${completionNotice.title} 완료됨`}</Text>
             <Button size="sm" variant="ghost" onClick={undoCompletion}>실행 취소</Button>
-          </Box>
+          </Surface>
         ) : null}
 
-        <Text variant="caption" ink="faint" className="storage-note">이 기기에 저장됨</Text>
+        <Text variant="caption" ink="tertiary" className="storage-note">이 기기에 저장됨</Text>
       </Stack>
     </Box>
   );
