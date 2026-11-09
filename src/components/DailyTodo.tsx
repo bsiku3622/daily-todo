@@ -17,7 +17,6 @@ import {
   PaperProvider,
   Stack,
   Surface,
-  Switch,
   Text,
   useTheme,
 } from "@studio-baeks/paper-ui";
@@ -121,6 +120,12 @@ const MoonIcon = () => (
 const BellIcon = () => (
   <Icon aria-hidden>
     <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
+  </Icon>
+);
+
+const BellOffIcon = () => (
+  <Icon aria-hidden>
+    <path d="M8.7 3A6 6 0 0 1 18 8c0 3.2.6 4.9 1.2 6M6.3 6.3C6.1 6.8 6 7.4 6 8c0 7-3 7-3 9h14M10 21h4M2 2l20 20" />
   </Icon>
 );
 
@@ -577,16 +582,15 @@ function DailyTodoApp() {
             <Text variant="subheading" as="p">Daily Todo</Text>
           </Inline>
           <Inline gap="xs">
-            <Inline className="notification-control" gap="sm" align="center">
-              <BellIcon />
-              <Label htmlFor="notifications">알림</Label>
-              <Switch
-                id="notifications"
-                checked={store.notificationEnabled}
-                onChange={(event) => void setNotifications(event.currentTarget.checked)}
-                aria-label="루틴 알림"
-              />
-            </Inline>
+            <IconButton
+              variant="muted"
+              aria-label="알림"
+              aria-pressed={store.notificationEnabled}
+              title={store.notificationEnabled ? "알림 켜짐" : "알림 꺼짐"}
+              onClick={() => void setNotifications(!store.notificationEnabled)}
+            >
+              {store.notificationEnabled ? <BellIcon /> : <BellOffIcon />}
+            </IconButton>
             <ThemeButton />
           </Inline>
         </Inline>

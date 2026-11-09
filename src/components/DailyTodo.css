@@ -91,10 +91,6 @@
 }
 
 @media (max-width: 600px) {
-  .notification-control > label {
-    display: none;
-  }
-
   .undo-notice {
     right: max(var(--pui-shape-space-lg), env(safe-area-inset-right));
     bottom: max(var(--pui-shape-space-lg), env(safe-area-inset-bottom));
