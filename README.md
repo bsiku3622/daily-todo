@@ -31,6 +31,4 @@ manifest and service worker for Android installation and offline use.
 The app shell and static assets are cached for offline use. Todo and routine
 data stays on the device and is not synchronized between browsers.
 
-The `paper-ui` dependency is packed in `vendor/` because it is not published to
-npm. When updating it, build the package in the `paper-ui` workspace, pack it
-into `vendor/`, and update the dependency filename if its version changes.
+The UI uses `@studio-baeks/paper-ui` from npm.
