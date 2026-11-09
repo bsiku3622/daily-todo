@@ -5,3 +5,5 @@ dist/
 *.log
 .vercel
 logs.md
+AGENTS.md
+CLAUDE.md
